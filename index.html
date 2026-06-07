@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuca Doce Ateliê - Pedidos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { samuca: { pink: '#ffd9d9', blue: '#0b56a6', brown: '#5c3a21', light: '#fff5f5' } },
+                    fontFamily: { display: ['Fredoka', 'sans-serif'], body: ['Nunito', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+        h1, h2, h3, .font-display { font-family: 'Fredoka', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fff5f5; }
+        ::-webkit-scrollbar-thumb { background: #ffd9d9; border-radius: 4px; }
+        .client-tab-active { border-bottom: 3px solid #0b56a6; color: #0b56a6; font-weight: bold; }
+        .client-tab-inactive { color: #5c3a21; opacity: 0.7; }
+    </style>
+</head>
+<body class="bg-samuca-light text-samuca-brown h-screen flex flex-col">
+
+    <nav class="bg-samuca-pink shadow-sm border-b-4 border-samuca-blue p-3 flex justify-between items-center z-10 flex-wrap gap-2">
+        <div class="flex items-center">
+            <img src="img/logo.png" alt="Logo" onerror="this.src='https://placehold.co/100x100?text=Logo'" class="h-12 w-12 rounded-full object-cover border-2 border-samuca-blue mr-3 shadow-md bg-white">
+            <div class="flex flex-col">
+                <h1 class="text-2xl font-bold font-display text-samuca-blue tracking-wide leading-tight">Samuca Doce Ateliê</h1>
+                <span class="text-xs font-bold text-samuca-brown/70 uppercase tracking-widest">Lanchonete • Confeitaria</span>
+            </div>
+        </div>
+        <div class="flex space-x-4 px-4 font-display text-lg">
+            <button onclick="switchClientTab('cardapio')" id="tab-cardapio" class="client-tab-active pb-1 transition-colors">Cardápio</button>
+            <button onclick="switchClientTab('status')" id="tab-status" class="client-tab-inactive pb-1 transition-colors relative">
+                Meus Pedidos <span id="status-badge" class="absolute -top-1 -right-3 bg-red-500 w-3 h-3 rounded-full animate-pulse hidden"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="system-message" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-samuca-blue text-white px-6 py-3 rounded-full shadow-xl hidden z-50 font-display text-lg border-2 border-white"></div>
+
+    <main class="flex-1 overflow-hidden relative">
+        <section id="view-cardapio" class="h-full flex flex-col md:flex-row w-full bg-samuca-light">
+            <div class="flex-1 p-4 md:p-8 overflow-y-auto">
+                <div class="flex justify-between items-center mb-8 border-b-2 border-pink-100 pb-2">
+                    <h2 class="text-3xl font-bold font-display text-samuca-blue"><i class="fa-solid fa-cake-candles text-pink-400 mr-2"></i>Nossas Delícias</h2>
+                    <select id="category-filter" onchange="filterProducts()" class="border-2 border-pink-200 rounded-full px-4 py-2 text-samuca-brown font-bold focus:outline-none bg-white">
+                        <option value="Todos">✨ Todos</option><option value="Doces">🍰 Doces</option><option value="Salgados">🥐 Salgados</option><option value="Combos">🍔 Combos</option><option value="Bebidas">🥤 Bebidas</option><option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div class="w-full md:w-[400px] bg-white border-l-4 border-pink-100 shadow-2xl flex flex-col h-[50vh] md:h-full z-20">
+                <div class="p-4 bg-samuca-blue text-white flex justify-between items-center">
+                    <h2 class="text-xl font-bold font-display"><i class="fa-solid fa-basket-shopping text-pink-200 mr-2"></i>Sua Cesta</h2>
+                    <span id="cart-count" class="bg-pink-400 px-3 py-1 rounded-full text-sm font-bold shadow-inner">0</span>
+                </div>
+                
+                <div id="cart-items" class="flex-1 p-4 overflow-y-auto space-y-3 bg-samuca-light/30">
+                    <div class="text-center mt-12 block"><i class="fa-solid fa-cookie-bite text-4xl text-pink-200 mb-3 block"></i><p class="text-samuca-brown/60 font-bold text-lg font-display">Sua cesta está vazia.</p></div>
+                </div>
+
+                <div class="p-5 bg-white border-t-2 border-pink-50 overflow-y-auto max-h-[60vh]">
+                    
+                    <div class="flex justify-between text-sm text-gray-500 font-bold mb-1">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500 font-bold mb-3 border-b border-pink-50 pb-2">
+                        <span>Frete/Taxa:</span>
+                        <span id="cart-frete">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-bold text-lg font-display text-samuca-brown/70">Total:</span>
+                        <span id="cart-total" class="font-bold text-2xl font-display text-samuca-blue">R$ 0,00</span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <input type="text" id="client-name" placeholder="Seu Nome Completo" class="w-full border-2 border-pink-200 rounded-xl p-2.5 outline-none font-bold text-sm bg-white">
+                        <input type="tel" id="client-whatsapp" placeholder="Seu WhatsApp (Ex: 21999999999)" class="w-full border-2 border-pink-200 rounded-xl p-2.5 outline-none font-bold text-sm bg-white">
+                        
+                        <select id="payment-method" onchange="toggleCashInput()" class="w-full border-2 border-pink-200 rounded-xl p-2.5 outline-none font-bold text-sm bg-white text-samuca-blue">
+                            <option value="" disabled selected>Escolha a Forma de Pagamento</option>
+                            <option value="Pix">Pix</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Crédito">Cartão de Crédito</option>
+                            <option value="Débito">Cartão de Débito</option>
+                        </select>
+                        
+                        <div id="cash-input-container" class="hidden bg-green-50 p-3 rounded-xl border border-green-200">
+                            <label class="block text-xs font-bold text-green-800 mb-1">Precisa de troco para quanto?</label>
+                            <input type="number" id="cash-amount" placeholder="Ex: 50.00" step="0.01" min="0" class="w-full border border-green-300 rounded-lg p-2 outline-none font-bold text-sm bg-white">
+                            <p id="cash-change-display" class="text-xs font-bold text-green-700 mt-2 hidden">Troco: R$ 0,00</p>
+                        </div>
+                    </div>
+
+                    <button onclick="checkout()" class="w-full bg-[#25D366] text-white font-bold font-display py-3 rounded-xl shadow-md flex justify-center items-center hover:-translate-y-1 transition-transform">
+                        <i class="fa-brands fa-whatsapp text-xl mr-2"></i> Enviar Pedido
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-status" class="h-full hidden p-4 md:p-8 overflow-y-auto bg-samuca-light">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-3xl font-bold font-display text-samuca-blue mb-8 border-b-2 border-pink-100 pb-2"><i class="fa-solid fa-receipt text-pink-400 mr-2"></i>Meus Pedidos</h2>
+                <div id="my-orders-list" class="space-y-4"></div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, getDoc, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtiDKZi-X9Vo-G2gIAT_X1qD6trxgFdBM", 
+            authDomain: "samuca-doce-atelie.firebaseapp.com",
+            projectId: "samuca-doce-atelie",
+            storageBucket: "samuca-doce-atelie.firebasestorage.app",
+            messagingSenderId: "390522345379",
+            appId: "1:390522345379:web:964e328f1e5ae53bab2c16",
+            measurementId: "G-4YPF8MNLM0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let products = [], cart = [], myOrders = [], currentUser = null, currentCategory = 'Todos';
+        let storeSettings = { frete: 0, whatsapp: '' };
+
+        async function initAuth() { try { await signInAnonymously(auth); } catch (e) { console.error(e); } }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) { 
+                listenToProducts(); 
+                listenToMyOrders(); 
+                listenToSettings();
+            }
+        });
+
+        function listenToSettings() {
+            onSnapshot(doc(db, 'settings', 'store'), (docSnap) => {
+                if (docSnap.exists()) {
+                    storeSettings = docSnap.data();
+                    storeSettings.frete = storeSettings.frete || 0;
+                    updateCartUI(); // Atualiza os totais se o frete mudar
+                }
+            });
+        }
+
+        window.switchClientTab = (tabId) => {
+            document.getElementById('view-cardapio').classList.toggle('hidden', tabId !== 'cardapio');
+            document.getElementById('view-cardapio').classList.toggle('flex', tabId === 'cardapio');
+            document.getElementById('view-status').classList.toggle('hidden', tabId !== 'status');
+            document.getElementById('tab-cardapio').className = tabId === 'cardapio' ? 'client-tab-active pb-1' : 'client-tab-inactive pb-1';
+            document.getElementById('tab-status').className = tabId === 'status' ? 'client-tab-active pb-1 relative' : 'client-tab-inactive pb-1 relative';
+            if(tabId === 'status') document.getElementById('status-badge').classList.add('hidden');
+        };
+
+        window.toggleCashInput = () => {
+            const method = document.getElementById('payment-method').value;
+            const cashContainer = document.getElementById('cash-input-container');
+            const cashInput = document.getElementById('cash-amount');
+            
+            if (method === 'Dinheiro') {
+                cashContainer.classList.remove('hidden');
+            } else {
+                cashContainer.classList.add('hidden');
+                cashInput.value = '';
+                document.getElementById('cash-change-display').classList.add('hidden');
+            }
+        };
+
+        // Calcula troco dinamicamente quando o usuário digita
+        document.getElementById('cash-amount').addEventListener('input', (e) => {
+            const amountGiven = parseFloat(e.target.value) || 0;
+            const subtotal = cart.reduce((acc, item) => acc + (item.price * item.cartQtd), 0);
+            const total = subtotal + storeSettings.frete;
+            const display = document.getElementById('cash-change-display');
+            
+            if (amountGiven >= total && total > 0) {
+                const change = amountGiven - total;
+                display.innerText = `Troco: R$ ${change.toFixed(2).replace('.',',')}`;
+                display.classList.remove('hidden', 'text-red-600');
+                display.classList.add('text-green-700');
+            } else if (amountGiven > 0) {
+                display.innerText = `Valor insuficiente (Falta R$ ${(total - amountGiven).toFixed(2).replace('.',',')})`;
+                display.classList.remove('hidden', 'text-green-700');
+                display.classList.add('text-red-600');
+            } else {
+                display.classList.add('hidden');
+            }
+        });
+
+        function listenToMyOrders() {
+            if (!currentUser) return;
+            const q = query(collection(db, 'orders'), where("userId", "==", currentUser.uid));
+            onSnapshot(q, (snapshot) => {
+                myOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                myOrders.sort((a, b) => b.timestamp - a.timestamp);
+                if (myOrders.length > 0 && document.getElementById('view-status').classList.contains('hidden')) {
+                    document.getElementById('status-badge').classList.remove('hidden');
+                }
+                renderMyOrders();
+            });
+        }
+
+        function renderMyOrders() {
+            const list = document.getElementById('my-orders-list');
+            list.innerHTML = '';
+            if(myOrders.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 text-samuca-brown/50 font-bold font-display text-xl">Você ainda não fez pedidos.</div>`;
+                return;
+            }
+
+            myOrders.forEach(order => {
+                const date = new Date(order.timestamp).toLocaleString('pt-BR');
+                let statusBadge = '';
+                if (order.status === 'pendente') statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Aguardando Confirmação</span>`;
+                else if (order.status === 'confirmado') statusBadge = `<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Em Preparo</span>`;
+                else if (order.status === 'finalizado') statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Pronto / Finalizado</span>`;
+                else if (order.status === 'recusado') statusBadge = `<span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-bold uppercase">Cancelado</span>`;
+
+                let itemsHTML = order.items.map(item => `<div class="flex justify-between text-sm py-1 border-b border-gray-100 last:border-0"><span class="text-gray-600"><b>${item.qtd}x</b> ${item.name}</span><span class="text-pink-500 font-bold">R$ ${(item.price * item.qtd).toFixed(2).replace('.',',')}</span></div>`).join('');
+                
+                let payDetails = `<span class="bg-white border border-gray-200 px-2 py-1 rounded text-xs text-gray-600 ml-2">${order.paymentMethod || '-'}</span>`;
+                if (order.frete > 0) {
+                    itemsHTML += `<div class="flex justify-between text-sm py-1 font-bold text-gray-500"><span class="">Frete / Taxa</span><span>+ R$ ${order.frete.toFixed(2).replace('.',',')}</span></div>`;
+                }
+
+                list.innerHTML += `
+                    <div class="p-5 rounded-2xl border-2 ${order.status === 'pendente' ? 'border-yellow-300 bg-yellow-50' : 'border-pink-100 bg-white'} shadow-sm flex flex-col gap-3">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                            <span class="text-sm font-bold text-gray-400"><i class="fa-solid fa-calendar-days text-pink-400 mr-1"></i> ${date}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="bg-samuca-light/50 p-3 rounded-xl">${itemsHTML}</div>
+                        <div class="flex justify-between items-center mt-1">
+                             <div class="flex items-center"><span class="font-bold text-samuca-brown">Total:</span> ${payDetails}</div>
+                             <span class="font-bold text-xl text-samuca-blue">R$ ${(order.total || 0).toFixed(2).replace('.',',')}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function listenToProducts() {
+            if (!currentUser) return;
+            onSnapshot(collection(db, 'products'), (snapshot) => {
+                products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderMenuGrid();
+                updateCartUI();
+            });
+        }
+
+        window.filterProducts = () => { currentCategory = document.getElementById('category-filter').value; renderMenuGrid(); };
+
+        function renderMenuGrid() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            const filteredProducts = currentCategory === 'Todos' ? products : products.filter(p => p.category === currentCategory);
+
+            filteredProducts.forEach(p => {
+                const outOfStock = p.stock <= 0;
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl shadow-sm border-2 border-pink-50 flex flex-col overflow-hidden">
+                        <div class="h-40 relative overflow-hidden">
+                            <img src="${p.image}" onerror="this.src='https://placehold.co/400x300/ffd9d9/0b56a6?text=Delicia'" class="w-full h-full object-cover">
+                            ${outOfStock ? '<div class="absolute inset-0 bg-white/80 flex items-center justify-center font-bold text-red-500 text-2xl font-display">ESGOTADO</div>' : ''}
+                        </div>
+                        <div class="p-4 flex flex-col flex-1">
+                            <h3 class="font-bold text-lg text-samuca-blue font-display leading-tight mb-1">${p.name}</h3>
+                            <p class="text-pink-500 font-bold text-xl mb-3">R$ ${p.price.toFixed(2).replace('.', ',')}</p>
+                            <div class="mt-auto flex justify-between items-center border-t border-pink-50 pt-3">
+                                <span class="text-xs font-bold text-gray-400">Disp: ${p.stock}</span>
+                                <button onclick="addToCart('${p.id}')" ${outOfStock ? 'disabled' : ''} class="${outOfStock ? 'bg-gray-300 text-gray-500' : 'bg-samuca-blue text-white'} px-4 py-2 rounded-full font-bold text-sm shadow">Adicionar</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        window.addToCart = (id) => {
+            const product = products.find(p => p.id === id);
+            const existing = cart.find(i => i.id === id);
+            if ((existing ? existing.cartQtd : 0) + 1 > product.stock) { showMsg("Estoque insuficiente!", "error"); return; }
+            if (existing) existing.cartQtd++; else cart.push({ ...product, cartQtd: 1 });
+            updateCartUI();
+        };
+
+        window.changeCartQtd = (id, delta) => {
+            const item = cart.find(i => i.id === id);
+            const prod = products.find(p => p.id === id);
+            if (!item) return;
+            const newQtd = item.cartQtd + delta;
+            if (newQtd <= 0) cart = cart.filter(i => i.id !== id);
+            else if (prod && newQtd > prod.stock) { showMsg("Limite atingido!", "error"); return; }
+            else item.cartQtd = newQtd;
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center mt-12 block">
+                        <i class="fa-solid fa-cookie-bite text-4xl text-pink-200 mb-3 block"></i>
+                        <p class="text-samuca-brown/60 font-bold text-lg font-display">Sua cesta está vazia.</p>
+                    </div>`;
+                document.getElementById('cart-count').innerText = '0';
+                document.getElementById('cart-subtotal').innerText = 'R$ 0,00';
+                document.getElementById('cart-frete').innerText = 'R$ 0,00';
+                document.getElementById('cart-total').innerText = 'R$ 0,00';
+                
+                // Dispara o evento pra recalcular troco caso esteja aberto
+                document.getElementById('cash-amount').dispatchEvent(new Event('input'));
+                return;
+            }
+
+            container.innerHTML = '';
+            let subtotal = 0, count = 0;
+            cart.forEach(item => {
+                subtotal += item.price * item.cartQtd; count += item.cartQtd;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-3 rounded-xl border-2 border-pink-50 mb-2 shadow-sm">
+                        <div class="flex-1 pr-2">
+                            <h4 class="font-bold text-samuca-blue text-xs line-clamp-1">${item.name}</h4>
+                            <p class="text-pink-500 font-bold text-xs mt-1">R$ ${(item.price * item.cartQtd).toFixed(2).replace('.', ',')}</p>
+                        </div>
+                        <div class="flex items-center space-x-1 bg-pink-50 rounded-full px-2 py-1">
+                            <button onclick="changeCartQtd('${item.id}', -1)" class="w-6 h-6 text-pink-400 hover:bg-pink-200 rounded-full flex justify-center items-center"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                            <span class="font-bold w-5 text-center text-sm text-samuca-blue">${item.cartQtd}</span>
+                            <button onclick="changeCartQtd('${item.id}', 1)" class="w-6 h-6 text-pink-400 hover:bg-pink-200 rounded-full flex justify-center items-center"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+            
+            const total = subtotal + storeSettings.frete;
+
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-subtotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('cart-frete').innerText = `R$ ${storeSettings.frete.toFixed(2).replace('.', ',')}`;
+            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            
+            // Dispara o evento pra recalcular troco
+            document.getElementById('cash-amount').dispatchEvent(new Event('input'));
+        }
+
+        window.checkout = async () => {
+            const cName = document.getElementById('client-name').value.trim();
+            const cWa = document.getElementById('client-whatsapp').value.replace(/\D/g, '');
+            const paymentMethod = document.getElementById('payment-method').value;
+            
+            if (!cName || cWa.length < 10) { showMsg("Preencha seu Nome e WhatsApp!", "error"); return; }
+            if (cart.length === 0) { showMsg("Sua cesta está vazia!", "error"); return; }
+            if (!paymentMethod) { showMsg("Selecione a forma de pagamento!", "error"); return; }
+
+            const subtotal = cart.reduce((acc, item) => acc + (item.price * item.cartQtd), 0);
+            const frete = storeSettings.frete || 0;
+            const grandTotal = subtotal + frete;
+            
+            let changeFor = null;
+            let changeAmount = 0;
+
+            if (paymentMethod === 'Dinheiro') {
+                const cashInput = document.getElementById('cash-amount').value;
+                if(cashInput) {
+                    changeFor = parseFloat(cashInput);
+                    if(changeFor < grandTotal) {
+                        showMsg("O valor para troco não pode ser menor que o total!", "error");
+                        return;
+                    }
+                    changeAmount = changeFor - grandTotal;
+                }
+            }
+
+            showMsg("Preparando seu pedido...", "info");
+
+            try {
+                if (!storeSettings.whatsapp) {
+                    showMsg("Loja não configurou o WhatsApp.", "error"); return;
+                }
+                const merchantNumber = storeSettings.whatsapp;
+                
+                let orderText = `🌟 *Pedido de ${cName}*\n\n`;
+                const orderItems = cart.map(item => {
+                    const itemTotal = item.price * item.cartQtd;
+                    orderText += `▪ ${item.cartQtd}x ${item.name} - R$ ${itemTotal.toFixed(2).replace('.',',')}\n`;
+                    return { id: item.id, name: item.name, price: item.price, qtd: item.cartQtd };
+                });
+                
+                orderText += `\n📦 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.',',')}`;
+                if(frete > 0) orderText += `\n🛵 *Taxa de Entrega:* R$ ${frete.toFixed(2).replace('.',',')}`;
+                orderText += `\n💰 *TOTAL:* R$ ${grandTotal.toFixed(2).replace('.',',')}\n`;
+                
+                orderText += `\n💳 *Pagamento:* ${paymentMethod}`;
+                if (paymentMethod === 'Dinheiro' && changeFor) {
+                    orderText += `\n🪙 *Troco para:* R$ ${changeFor.toFixed(2).replace('.',',')}`;
+                    orderText += `\n🔙 *Devolver:* R$ ${changeAmount.toFixed(2).replace('.',',')}`;
+                }
+
+                // Salva no banco de dados com as informações novas
+                await addDoc(collection(db, 'orders'), {
+                    userId: currentUser.uid, 
+                    clientName: cName, 
+                    clientWhatsapp: cWa,
+                    items: orderItems, 
+                    frete: frete,
+                    total: grandTotal, 
+                    paymentMethod: paymentMethod,
+                    changeFor: changeFor,
+                    changeAmount: changeAmount,
+                    status: 'pendente', 
+                    timestamp: Date.now()
+                });
+
+                // Zera carrinho e form
+                cart = []; 
+                updateCartUI();
+                document.getElementById('client-name').value = ''; 
+                document.getElementById('client-whatsapp').value = '';
+                document.getElementById('payment-method').value = '';
+                document.getElementById('cash-amount').value = '';
+                toggleCashInput();
+                
+                showMsg("Sucesso! Redirecionando para o WhatsApp... 🚀");
+                switchClientTab('status');
+
+                // Bypass de bloqueio de Popup
+                const whatsappUrl = `https://wa.me/${merchantNumber}?text=${encodeURIComponent(orderText)}`;
+                setTimeout(() => { 
+                    const newWindow = window.open(whatsappUrl, '_blank');
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                        window.location.href = whatsappUrl; 
+                    }
+                }, 800);
+
+            } catch (error) { 
+                console.error(error); 
+                showMsg("Erro ao enviar pedido.", "error"); 
+            }
+        };
+
+        window.showMsg = (text, type = 'success') => {
+            const msg = document.getElementById('system-message');
+            msg.innerText = text;
+            msg.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-xl z-50 text-white font-display text-lg tracking-wide border-2 border-white transition-all duration-300 ${type === 'error' ? 'bg-red-500' : 'bg-samuca-blue'}`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        };
+
+        initAuth();
+    </script>
+</body>
+</html>
