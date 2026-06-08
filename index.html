@@ -2,8 +2,14 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samuca Doce Ateliê - Pedidos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Samuca Sabores da Vovó - Pedidos</title>
+    
+    <meta name="theme-color" content="#0b56a6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Samuca Sabores">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -18,78 +24,107 @@
         }
     </script>
     <style>
-        body { font-family: 'Nunito', sans-serif; }
+        body { font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
         h1, h2, h3, .font-display { font-family: 'Fredoka', sans-serif; }
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #fff5f5; }
         ::-webkit-scrollbar-thumb { background: #ffd9d9; border-radius: 4px; }
         .client-tab-active { border-bottom: 3px solid #0b56a6; color: #0b56a6; font-weight: bold; }
         .client-tab-inactive { color: #5c3a21; opacity: 0.7; }
+        
+        /* Previne zoom em inputs no iOS */
+        input[type="text"], input[type="number"], input[type="tel"], select, textarea {
+            font-size: 16px;
+        }
     </style>
 </head>
-<body class="bg-samuca-light text-samuca-brown h-screen flex flex-col">
+<body class="bg-samuca-light text-samuca-brown h-screen flex flex-col overflow-hidden">
 
-    <nav class="bg-samuca-pink shadow-sm border-b-4 border-samuca-blue p-3 flex justify-between items-center z-10 flex-wrap gap-2">
+    <nav class="bg-samuca-pink shadow-sm border-b-4 border-samuca-blue p-3 flex justify-between items-center z-30 flex-wrap gap-3">
         <div class="flex items-center">
-            <img src="img/logo.png" alt="Logo" onerror="this.src='https://placehold.co/100x100?text=Logo'" class="h-12 w-12 rounded-full object-cover border-2 border-samuca-blue mr-3 shadow-md bg-white">
+            <img src="img/logo.png" alt="Logo" onerror="this.src='https://placehold.co/100x100?text=Logo'" class="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover border-2 border-samuca-blue mr-3 shadow-md bg-white">
             <div class="flex flex-col">
-                <h1 class="text-2xl font-bold font-display text-samuca-blue tracking-wide leading-tight">Samuca Doce Ateliê</h1>
-                <span class="text-xs font-bold text-samuca-brown/70 uppercase tracking-widest">Lanchonete • Confeitaria</span>
+                <h1 class="text-xl sm:text-2xl font-bold font-display text-samuca-blue tracking-wide leading-tight">Samuca Sabores da Vovó</h1>
             </div>
         </div>
-        <div class="flex space-x-4 px-4 font-display text-lg">
-            <button onclick="switchClientTab('cardapio')" id="tab-cardapio" class="client-tab-active pb-1 transition-colors">Cardápio</button>
-            <button onclick="switchClientTab('status')" id="tab-status" class="client-tab-inactive pb-1 transition-colors relative">
-                Meus Pedidos <span id="status-badge" class="absolute -top-1 -right-3 bg-red-500 w-3 h-3 rounded-full animate-pulse hidden"></span>
+        
+        <div class="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-between sm:justify-end">
+            <div class="flex space-x-4 px-2 font-display text-base sm:text-lg">
+                <button onclick="switchClientTab('cardapio')" id="tab-cardapio" class="client-tab-active pb-1 transition-colors">Cardápio</button>
+                <button onclick="switchClientTab('status')" id="tab-status" class="client-tab-inactive pb-1 transition-colors relative">
+                    Meus Pedidos <span id="status-badge" class="absolute -top-1 -right-2 bg-red-500 w-2.5 h-2.5 rounded-full animate-pulse hidden"></span>
+                </button>
+            </div>
+            <button id="btn-install-app" class="hidden bg-samuca-blue text-white text-xs sm:text-sm px-3 py-1.5 rounded-full font-bold shadow-md hover:bg-blue-800 transition whitespace-nowrap">
+                <i class="fa-solid fa-download mr-1"></i> Instalar App
             </button>
         </div>
     </nav>
 
-    <div id="system-message" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-samuca-blue text-white px-6 py-3 rounded-full shadow-xl hidden z-50 font-display text-lg border-2 border-white"></div>
+    <div id="system-message" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-samuca-blue text-white px-6 py-3 rounded-full shadow-xl hidden z-50 font-display text-sm sm:text-lg border-2 border-white w-[90%] sm:w-auto text-center"></div>
 
-    <main class="flex-1 overflow-hidden relative">
+    <main class="flex-1 overflow-hidden relative flex flex-col md:flex-row w-full">
+        
         <section id="view-cardapio" class="h-full flex flex-col md:flex-row w-full bg-samuca-light">
-            <div class="flex-1 p-4 md:p-8 overflow-y-auto">
-                <div class="flex justify-between items-center mb-8 border-b-2 border-pink-100 pb-2">
-                    <h2 class="text-3xl font-bold font-display text-samuca-blue"><i class="fa-solid fa-cake-candles text-pink-400 mr-2"></i>Nossas Delícias</h2>
-                    <select id="category-filter" onchange="filterProducts()" class="border-2 border-pink-200 rounded-full px-4 py-2 text-samuca-brown font-bold focus:outline-none bg-white">
-                        <option value="Todos">✨ Todos</option><option value="Doces">🍰 Doces</option><option value="Salgados">🥐 Salgados</option><option value="Combos">🍔 Combos</option><option value="Bebidas">🥤 Bebidas</option><option value="Outros">Outros</option>
+            <div class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto pb-24 md:pb-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b-2 border-pink-100 pb-3 gap-3">
+                    <h2 class="text-2xl sm:text-3xl font-bold font-display text-samuca-blue"><i class="fa-solid fa-cake-candles text-pink-400 mr-2"></i>Nossas Delícias</h2>
+                    <select id="category-filter" onchange="filterProducts()" class="w-full sm:w-auto border-2 border-pink-200 rounded-full px-4 py-2 text-samuca-brown font-bold focus:outline-none bg-white shadow-sm">
+                        <option value="Todos">✨ Todos</option>
+                        <option value="Doces">🍰 Doces</option>
+                        <option value="Salgados">🥐 Salgados</option>
+                        <option value="Combos">🍔 Combos</option>
+                        <option value="Bebidas">🥤 Bebidas</option>
+                        <option value="Outros">Outros</option>
                     </select>
                 </div>
-                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
             </div>
 
-            <div class="w-full md:w-[400px] bg-white border-l-4 border-pink-100 shadow-2xl flex flex-col h-[50vh] md:h-full z-20">
-                <div class="p-4 bg-samuca-blue text-white flex justify-between items-center">
-                    <h2 class="text-xl font-bold font-display"><i class="fa-solid fa-basket-shopping text-pink-200 mr-2"></i>Sua Cesta</h2>
+            <div id="cart-section" class="w-full md:w-[350px] lg:w-[400px] bg-white border-t-4 md:border-t-0 md:border-l-4 border-pink-100 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] md:shadow-2xl flex flex-col h-[65vh] md:h-full z-20 flex-shrink-0 transition-transform duration-300">
+                <div class="p-3 sm:p-4 bg-samuca-blue text-white flex justify-between items-center sticky top-0 z-10">
+                    <h2 class="text-lg sm:text-xl font-bold font-display"><i class="fa-solid fa-basket-shopping text-pink-200 mr-2"></i>Sua Cesta</h2>
                     <span id="cart-count" class="bg-pink-400 px-3 py-1 rounded-full text-sm font-bold shadow-inner">0</span>
                 </div>
                 
-                <div id="cart-items" class="flex-1 p-4 overflow-y-auto space-y-3 bg-samuca-light/30">
-                    <div class="text-center mt-12 block"><i class="fa-solid fa-cookie-bite text-4xl text-pink-200 mb-3 block"></i><p class="text-samuca-brown/60 font-bold text-lg font-display">Sua cesta está vazia.</p></div>
+                <div id="cart-items" class="flex-1 p-3 sm:p-4 overflow-y-auto space-y-2 bg-samuca-light/30">
+                    <div class="text-center mt-8 block">
+                        <i class="fa-solid fa-cookie-bite text-4xl text-pink-200 mb-3 block"></i>
+                        <p class="text-samuca-brown/60 font-bold text-base sm:text-lg font-display">Sua cesta está vazia.</p>
+                    </div>
                 </div>
 
-                <div class="p-5 bg-white border-t-2 border-pink-50 overflow-y-auto max-h-[60vh]">
+                <div class="p-4 sm:p-5 bg-white border-t-2 border-pink-50 overflow-y-auto max-h-[60vh] md:max-h-none">
                     
-                    <div class="flex justify-between text-sm text-gray-500 font-bold mb-1">
+                    <div class="flex gap-2 mb-4 border-b border-pink-50 pb-4">
+                        <input type="text" id="cart-coupon-input" placeholder="Cupom de Desconto" class="flex-1 border-2 border-pink-200 rounded-xl p-2 outline-none font-bold text-xs sm:text-sm bg-white uppercase">
+                        <button onclick="applyCoupon()" class="bg-pink-400 hover:bg-pink-500 text-white font-bold rounded-xl px-3 sm:px-4 text-xs sm:text-sm transition shadow-sm">Aplicar</button>
+                    </div>
+
+                    <div class="flex justify-between text-xs sm:text-sm text-gray-500 font-bold mb-1">
                         <span>Subtotal:</span>
                         <span id="cart-subtotal">R$ 0,00</span>
                     </div>
-                    <div class="flex justify-between text-sm text-gray-500 font-bold mb-3 border-b border-pink-50 pb-2">
+                    <div class="flex justify-between text-xs sm:text-sm text-gray-500 font-bold mb-1">
                         <span>Frete/Taxa:</span>
                         <span id="cart-frete">R$ 0,00</span>
                     </div>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="font-bold text-lg font-display text-samuca-brown/70">Total:</span>
-                        <span id="cart-total" class="font-bold text-2xl font-display text-samuca-blue">R$ 0,00</span>
+                    <div id="cart-discount-line" class="hidden flex justify-between text-xs sm:text-sm text-green-600 font-bold mb-3 border-b border-pink-50 pb-2">
+                        <span>Desconto:</span>
+                        <span id="cart-discount">- R$ 0,00</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-4 mt-2">
+                        <span class="font-bold text-base sm:text-lg font-display text-samuca-brown/70">Total:</span>
+                        <span id="cart-total" class="font-bold text-xl sm:text-2xl font-display text-samuca-blue">R$ 0,00</span>
                     </div>
 
-                    <div class="space-y-3 mb-4">
-                        <input type="text" id="client-name" placeholder="Seu Nome Completo" class="w-full border-2 border-pink-200 rounded-xl p-2.5 outline-none font-bold text-sm bg-white">
-                        <input type="tel" id="client-whatsapp" placeholder="Seu WhatsApp (Ex: 21999999999)" class="w-full border-2 border-pink-200 rounded-xl p-2.5 outline-none font-bold text-sm bg-white">
+                    <div class="space-y-2 sm:space-y-3 mb-4">
+                        <input type="text" id="client-name" placeholder="Seu Nome Completo" class="w-full border-2 border-pink-200 rounded-xl p-2 sm:p-2.5 outline-none font-bold text-sm bg-white">
+                        <input type="tel" id="client-whatsapp" placeholder="WhatsApp (Ex: 21999999999)" class="w-full border-2 border-pink-200 rounded-xl p-2 sm:p-2.5 outline-none font-bold text-sm bg-white">
                         
-                        <select id="payment-method" onchange="toggleCashInput()" class="w-full border-2 border-pink-200 rounded-xl p-2.5 outline-none font-bold text-sm bg-white text-samuca-blue">
-                            <option value="" disabled selected>Escolha a Forma de Pagamento</option>
+                        <select id="payment-method" onchange="toggleCashInput()" class="w-full border-2 border-pink-200 rounded-xl p-2 sm:p-2.5 outline-none font-bold text-sm bg-white text-samuca-blue">
+                            <option value="" disabled selected>Forma de Pagamento</option>
                             <option value="Pix">Pix</option>
                             <option value="Dinheiro">Dinheiro</option>
                             <option value="Crédito">Cartão de Crédito</option>
@@ -103,19 +138,25 @@
                         </div>
                     </div>
 
-                    <button onclick="checkout()" class="w-full bg-[#25D366] text-white font-bold font-display py-3 rounded-xl shadow-md flex justify-center items-center hover:-translate-y-1 transition-transform">
-                        <i class="fa-brands fa-whatsapp text-xl mr-2"></i> Enviar Pedido
+                    <button onclick="checkout()" class="w-full bg-[#25D366] text-white font-bold font-display py-3 rounded-xl shadow-md flex justify-center items-center hover:-translate-y-1 transition-transform text-sm sm:text-base mb-2">
+                        <i class="fa-brands fa-whatsapp text-lg sm:text-xl mr-2"></i> Enviar Pedido
                     </button>
                 </div>
             </div>
         </section>
 
-        <section id="view-status" class="h-full hidden p-4 md:p-8 overflow-y-auto bg-samuca-light">
-            <div class="max-w-4xl mx-auto w-full">
-                <h2 class="text-3xl font-bold font-display text-samuca-blue mb-8 border-b-2 border-pink-100 pb-2"><i class="fa-solid fa-receipt text-pink-400 mr-2"></i>Meus Pedidos</h2>
+        <section id="view-status" class="h-full hidden w-full p-4 md:p-8 overflow-y-auto bg-samuca-light">
+            <div class="max-w-4xl mx-auto w-full pb-20">
+                <h2 class="text-2xl sm:text-3xl font-bold font-display text-samuca-blue mb-6 sm:mb-8 border-b-2 border-pink-100 pb-2"><i class="fa-solid fa-receipt text-pink-400 mr-2"></i>Meus Pedidos</h2>
                 <div id="my-orders-list" class="space-y-4"></div>
             </div>
         </section>
+        
+        <button id="floating-cart-btn" onclick="document.getElementById('cart-section').scrollIntoView({behavior: 'smooth'})" class="md:hidden fixed bottom-6 right-6 bg-samuca-blue text-white p-4 rounded-full shadow-[0_10px_25px_rgba(11,86,166,0.5)] z-40 flex items-center justify-center transition-transform transform hover:scale-105 active:scale-95">
+            <i class="fa-solid fa-basket-shopping text-xl"></i>
+            <span id="floating-cart-count" class="absolute -top-2 -right-2 bg-pink-500 text-white font-bold text-xs w-6 h-6 flex items-center justify-center rounded-full border-2 border-samuca-light">0</span>
+        </button>
+
     </main>
 
     <script type="module">
@@ -123,6 +164,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, getDoc, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCtiDKZi-X9Vo-G2gIAT_X1qD6trxgFdBM", 
             authDomain: "samuca-doce-atelie.firebaseapp.com",
@@ -139,8 +181,21 @@
 
         let products = [], cart = [], myOrders = [], currentUser = null, currentCategory = 'Todos';
         let storeSettings = { frete: 0, whatsapp: '' };
+        let appliedCoupon = null; 
 
-        async function initAuth() { try { await signInAnonymously(auth); } catch (e) { console.error(e); } }
+        // FUNÇÃO PARA IMBUTIR +55 AUTOMATICAMENTE NO WHATSAPP DO CLIENTE
+        function formatPhoneBR(phone) {
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length === 10 || clean.length === 11) {
+                return '55' + clean;
+            }
+            return clean;
+        }
+
+        async function initAuth() { 
+            try { await signInAnonymously(auth); } 
+            catch (e) { console.error(e); } 
+        }
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
@@ -156,7 +211,7 @@
                 if (docSnap.exists()) {
                     storeSettings = docSnap.data();
                     storeSettings.frete = storeSettings.frete || 0;
-                    updateCartUI(); // Atualiza os totais se o frete mudar
+                    updateCartUI(); 
                 }
             });
         }
@@ -165,11 +220,36 @@
             document.getElementById('view-cardapio').classList.toggle('hidden', tabId !== 'cardapio');
             document.getElementById('view-cardapio').classList.toggle('flex', tabId === 'cardapio');
             document.getElementById('view-status').classList.toggle('hidden', tabId !== 'status');
+            
             document.getElementById('tab-cardapio').className = tabId === 'cardapio' ? 'client-tab-active pb-1' : 'client-tab-inactive pb-1';
             document.getElementById('tab-status').className = tabId === 'status' ? 'client-tab-active pb-1 relative' : 'client-tab-inactive pb-1 relative';
+            
+            // Ocultar botão flutuante se não estiver no cardápio
+            document.getElementById('floating-cart-btn').style.display = tabId === 'cardapio' ? 'flex' : 'none';
+            
             if(tabId === 'status') document.getElementById('status-badge').classList.add('hidden');
         };
 
+        // --- SISTEMA DE CUPONS ---
+        window.applyCoupon = async () => {
+            const code = document.getElementById('cart-coupon-input').value.trim().toUpperCase();
+            if (!code) { showMsg("Digite um código de cupom", "error"); return; }
+            
+            try {
+                const snap = await getDoc(doc(db, 'coupons', code));
+                if (snap.exists() && snap.data().active) {
+                    appliedCoupon = snap.data();
+                    showMsg("Cupom ativado com sucesso!");
+                    updateCartUI(); 
+                } else {
+                    showMsg("Cupom inválido ou expirado", "error");
+                    appliedCoupon = null;
+                    updateCartUI();
+                }
+            } catch (e) { showMsg("Erro ao validar o cupom", "error"); }
+        };
+
+        // --- CALCULADORA DE TROCO ---
         window.toggleCashInput = () => {
             const method = document.getElementById('payment-method').value;
             const cashContainer = document.getElementById('cash-input-container');
@@ -184,11 +264,17 @@
             }
         };
 
-        // Calcula troco dinamicamente quando o usuário digita
         document.getElementById('cash-amount').addEventListener('input', (e) => {
             const amountGiven = parseFloat(e.target.value) || 0;
             const subtotal = cart.reduce((acc, item) => acc + (item.price * item.cartQtd), 0);
-            const total = subtotal + storeSettings.frete;
+            
+            let discount = 0;
+            if (appliedCoupon) {
+                discount = appliedCoupon.type === 'pct' ? subtotal * (appliedCoupon.value / 100) : appliedCoupon.value;
+            }
+            if (discount > subtotal) discount = subtotal; 
+            
+            const total = (subtotal + storeSettings.frete) - discount;
             const display = document.getElementById('cash-change-display');
             
             if (amountGiven >= total && total > 0) {
@@ -205,6 +291,7 @@
             }
         });
 
+        // --- HISTÓRICO DE PEDIDOS ---
         function listenToMyOrders() {
             if (!currentUser) return;
             const q = query(collection(db, 'orders'), where("userId", "==", currentUser.uid));
@@ -229,33 +316,35 @@
             myOrders.forEach(order => {
                 const date = new Date(order.timestamp).toLocaleString('pt-BR');
                 let statusBadge = '';
-                if (order.status === 'pendente') statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Aguardando Confirmação</span>`;
-                else if (order.status === 'confirmado') statusBadge = `<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Em Preparo</span>`;
-                else if (order.status === 'finalizado') statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Pronto / Finalizado</span>`;
-                else if (order.status === 'recusado') statusBadge = `<span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-bold uppercase">Cancelado</span>`;
+                if (order.status === 'pendente') statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">Aguardando</span>`;
+                else if (order.status === 'confirmado') statusBadge = `<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">Em Preparo</span>`;
+                else if (order.status === 'finalizado') statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">Pronto / Finalizado</span>`;
+                else if (order.status === 'recusado') statusBadge = `<span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">Cancelado</span>`;
 
-                let itemsHTML = order.items.map(item => `<div class="flex justify-between text-sm py-1 border-b border-gray-100 last:border-0"><span class="text-gray-600"><b>${item.qtd}x</b> ${item.name}</span><span class="text-pink-500 font-bold">R$ ${(item.price * item.qtd).toFixed(2).replace('.',',')}</span></div>`).join('');
+                let itemsHTML = order.items.map(item => `<div class="flex justify-between text-xs sm:text-sm py-1 border-b border-gray-100 last:border-0"><span class="text-gray-600"><b>${item.qtd}x</b> ${item.name}</span><span class="text-pink-500 font-bold">R$ ${(item.price * item.qtd).toFixed(2).replace('.',',')}</span></div>`).join('');
                 
-                let payDetails = `<span class="bg-white border border-gray-200 px-2 py-1 rounded text-xs text-gray-600 ml-2">${order.paymentMethod || '-'}</span>`;
-                if (order.frete > 0) {
-                    itemsHTML += `<div class="flex justify-between text-sm py-1 font-bold text-gray-500"><span class="">Frete / Taxa</span><span>+ R$ ${order.frete.toFixed(2).replace('.',',')}</span></div>`;
-                }
+                let payDetails = `<span class="bg-white border border-gray-200 px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs text-gray-600 ml-2">${order.paymentMethod || '-'}</span>`;
+                
+                let extras = '';
+                if (order.frete > 0) extras += `<div class="flex justify-between text-xs sm:text-sm py-1 text-gray-500"><span>Frete / Taxa</span><span>+ R$ ${order.frete.toFixed(2).replace('.',',')}</span></div>`;
+                if (order.discountAmount > 0) extras += `<div class="flex justify-between text-xs sm:text-sm py-1 font-bold text-green-600"><span>Desconto (${order.couponCode || 'Cupom'})</span><span>- R$ ${order.discountAmount.toFixed(2).replace('.',',')}</span></div>`;
 
                 list.innerHTML += `
-                    <div class="p-5 rounded-2xl border-2 ${order.status === 'pendente' ? 'border-yellow-300 bg-yellow-50' : 'border-pink-100 bg-white'} shadow-sm flex flex-col gap-3">
+                    <div class="p-4 sm:p-5 rounded-2xl border-2 ${order.status === 'pendente' ? 'border-yellow-300 bg-yellow-50' : 'border-pink-100 bg-white'} shadow-sm flex flex-col gap-3">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-3">
-                            <span class="text-sm font-bold text-gray-400"><i class="fa-solid fa-calendar-days text-pink-400 mr-1"></i> ${date}</span>
+                            <span class="text-xs sm:text-sm font-bold text-gray-400"><i class="fa-solid fa-calendar-days text-pink-400 mr-1"></i> ${date}</span>
                             ${statusBadge}
                         </div>
-                        <div class="bg-samuca-light/50 p-3 rounded-xl">${itemsHTML}</div>
-                        <div class="flex justify-between items-center mt-1">
-                             <div class="flex items-center"><span class="font-bold text-samuca-brown">Total:</span> ${payDetails}</div>
-                             <span class="font-bold text-xl text-samuca-blue">R$ ${(order.total || 0).toFixed(2).replace('.',',')}</span>
+                        <div class="bg-samuca-light/50 p-3 rounded-xl">${itemsHTML}${extras}</div>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-1 gap-2">
+                             <div class="flex items-center w-full sm:w-auto justify-between sm:justify-start"><span class="font-bold text-samuca-brown text-sm">Total:</span> ${payDetails}</div>
+                             <span class="font-bold text-lg sm:text-xl text-samuca-blue">R$ ${(order.total || 0).toFixed(2).replace('.',',')}</span>
                         </div>
                     </div>`;
             });
         }
 
+        // --- CARRINHO E PRODUTOS ---
         function listenToProducts() {
             if (!currentUser) return;
             onSnapshot(collection(db, 'products'), (snapshot) => {
@@ -276,16 +365,16 @@
                 const outOfStock = p.stock <= 0;
                 grid.innerHTML += `
                     <div class="bg-white rounded-2xl shadow-sm border-2 border-pink-50 flex flex-col overflow-hidden">
-                        <div class="h-40 relative overflow-hidden">
+                        <div class="h-32 sm:h-40 relative overflow-hidden">
                             <img src="${p.image}" onerror="this.src='https://placehold.co/400x300/ffd9d9/0b56a6?text=Delicia'" class="w-full h-full object-cover">
-                            ${outOfStock ? '<div class="absolute inset-0 bg-white/80 flex items-center justify-center font-bold text-red-500 text-2xl font-display">ESGOTADO</div>' : ''}
+                            ${outOfStock ? '<div class="absolute inset-0 bg-white/80 flex items-center justify-center font-bold text-red-500 text-xl sm:text-2xl font-display">ESGOTADO</div>' : ''}
                         </div>
-                        <div class="p-4 flex flex-col flex-1">
-                            <h3 class="font-bold text-lg text-samuca-blue font-display leading-tight mb-1">${p.name}</h3>
-                            <p class="text-pink-500 font-bold text-xl mb-3">R$ ${p.price.toFixed(2).replace('.', ',')}</p>
-                            <div class="mt-auto flex justify-between items-center border-t border-pink-50 pt-3">
-                                <span class="text-xs font-bold text-gray-400">Disp: ${p.stock}</span>
-                                <button onclick="addToCart('${p.id}')" ${outOfStock ? 'disabled' : ''} class="${outOfStock ? 'bg-gray-300 text-gray-500' : 'bg-samuca-blue text-white'} px-4 py-2 rounded-full font-bold text-sm shadow">Adicionar</button>
+                        <div class="p-3 sm:p-4 flex flex-col flex-1">
+                            <h3 class="font-bold text-base sm:text-lg text-samuca-blue font-display leading-tight mb-1">${p.name}</h3>
+                            <p class="text-pink-500 font-bold text-lg sm:text-xl mb-2 sm:mb-3">R$ ${p.price.toFixed(2).replace('.', ',')}</p>
+                            <div class="mt-auto flex justify-between items-center border-t border-pink-50 pt-2 sm:pt-3">
+                                <span class="text-[10px] sm:text-xs font-bold text-gray-400">Disp: ${p.stock}</span>
+                                <button onclick="addToCart('${p.id}')" ${outOfStock ? 'disabled' : ''} class="${outOfStock ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-samuca-blue text-white'} px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow active:scale-95 transition-transform">Adicionar</button>
                             </div>
                         </div>
                     </div>`;
@@ -317,15 +406,16 @@
             if (cart.length === 0) {
                 container.innerHTML = `
                     <div class="text-center mt-12 block">
-                        <i class="fa-solid fa-cookie-bite text-4xl text-pink-200 mb-3 block"></i>
-                        <p class="text-samuca-brown/60 font-bold text-lg font-display">Sua cesta está vazia.</p>
+                        <i class="fa-solid fa-cookie-bite text-3xl sm:text-4xl text-pink-200 mb-3 block"></i>
+                        <p class="text-samuca-brown/60 font-bold text-base sm:text-lg font-display">Sua cesta está vazia.</p>
                     </div>`;
                 document.getElementById('cart-count').innerText = '0';
+                document.getElementById('floating-cart-count').innerText = '0';
                 document.getElementById('cart-subtotal').innerText = 'R$ 0,00';
                 document.getElementById('cart-frete').innerText = 'R$ 0,00';
                 document.getElementById('cart-total').innerText = 'R$ 0,00';
+                document.getElementById('cart-discount-line').classList.add('hidden');
                 
-                // Dispara o evento pra recalcular troco caso esteja aberto
                 document.getElementById('cash-amount').dispatchEvent(new Event('input'));
                 return;
             }
@@ -335,42 +425,62 @@
             cart.forEach(item => {
                 subtotal += item.price * item.cartQtd; count += item.cartQtd;
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-white p-3 rounded-xl border-2 border-pink-50 mb-2 shadow-sm">
+                    <div class="flex justify-between items-center bg-white p-2 sm:p-3 rounded-xl border-2 border-pink-50 mb-2 shadow-sm">
                         <div class="flex-1 pr-2">
-                            <h4 class="font-bold text-samuca-blue text-xs line-clamp-1">${item.name}</h4>
-                            <p class="text-pink-500 font-bold text-xs mt-1">R$ ${(item.price * item.cartQtd).toFixed(2).replace('.', ',')}</p>
+                            <h4 class="font-bold text-samuca-blue text-[11px] sm:text-xs line-clamp-1">${item.name}</h4>
+                            <p class="text-pink-500 font-bold text-[11px] sm:text-xs mt-1">R$ ${(item.price * item.cartQtd).toFixed(2).replace('.', ',')}</p>
                         </div>
-                        <div class="flex items-center space-x-1 bg-pink-50 rounded-full px-2 py-1">
-                            <button onclick="changeCartQtd('${item.id}', -1)" class="w-6 h-6 text-pink-400 hover:bg-pink-200 rounded-full flex justify-center items-center"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                            <span class="font-bold w-5 text-center text-sm text-samuca-blue">${item.cartQtd}</span>
-                            <button onclick="changeCartQtd('${item.id}', 1)" class="w-6 h-6 text-pink-400 hover:bg-pink-200 rounded-full flex justify-center items-center"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                        <div class="flex items-center space-x-1 bg-pink-50 rounded-full px-1.5 sm:px-2 py-1">
+                            <button onclick="changeCartQtd('${item.id}', -1)" class="w-5 h-5 sm:w-6 sm:h-6 text-pink-400 hover:bg-pink-200 rounded-full flex justify-center items-center"><i class="fa-solid fa-minus text-[8px] sm:text-[10px]"></i></button>
+                            <span class="font-bold w-4 sm:w-5 text-center text-xs sm:text-sm text-samuca-blue">${item.cartQtd}</span>
+                            <button onclick="changeCartQtd('${item.id}', 1)" class="w-5 h-5 sm:w-6 sm:h-6 text-pink-400 hover:bg-pink-200 rounded-full flex justify-center items-center"><i class="fa-solid fa-plus text-[8px] sm:text-[10px]"></i></button>
                         </div>
                     </div>`;
             });
             
-            const total = subtotal + storeSettings.frete;
+            let discountAmount = 0;
+            if (appliedCoupon) {
+                discountAmount = appliedCoupon.type === 'pct' ? subtotal * (appliedCoupon.value / 100) : appliedCoupon.value;
+                if (discountAmount > subtotal) discountAmount = subtotal; 
+                
+                document.getElementById('cart-discount-line').classList.remove('hidden');
+                document.getElementById('cart-discount').innerText = `- R$ ${discountAmount.toFixed(2).replace('.', ',')}`;
+            } else {
+                document.getElementById('cart-discount-line').classList.add('hidden');
+            }
+
+            const total = (subtotal + storeSettings.frete) - discountAmount;
 
             document.getElementById('cart-count').innerText = count;
+            document.getElementById('floating-cart-count').innerText = count;
             document.getElementById('cart-subtotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
             document.getElementById('cart-frete').innerText = `R$ ${storeSettings.frete.toFixed(2).replace('.', ',')}`;
             document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
             
-            // Dispara o evento pra recalcular troco
             document.getElementById('cash-amount').dispatchEvent(new Event('input'));
         }
 
+        // --- CHECKOUT ---
         window.checkout = async () => {
             const cName = document.getElementById('client-name').value.trim();
-            const cWa = document.getElementById('client-whatsapp').value.replace(/\D/g, '');
+            const inputWa = document.getElementById('client-whatsapp').value;
+            const cWaFormatado = formatPhoneBR(inputWa); 
             const paymentMethod = document.getElementById('payment-method').value;
             
-            if (!cName || cWa.length < 10) { showMsg("Preencha seu Nome e WhatsApp!", "error"); return; }
+            if (!cName || cWaFormatado.length < 12) { showMsg("Preencha seu Nome e WhatsApp com DDD!", "error"); return; }
             if (cart.length === 0) { showMsg("Sua cesta está vazia!", "error"); return; }
             if (!paymentMethod) { showMsg("Selecione a forma de pagamento!", "error"); return; }
 
             const subtotal = cart.reduce((acc, item) => acc + (item.price * item.cartQtd), 0);
             const frete = storeSettings.frete || 0;
-            const grandTotal = subtotal + frete;
+            
+            let discountAmount = 0;
+            if (appliedCoupon) {
+                discountAmount = appliedCoupon.type === 'pct' ? subtotal * (appliedCoupon.value / 100) : appliedCoupon.value;
+                if (discountAmount > subtotal) discountAmount = subtotal;
+            }
+
+            const grandTotal = (subtotal + frete) - discountAmount;
             
             let changeFor = null;
             let changeAmount = 0;
@@ -379,10 +489,7 @@
                 const cashInput = document.getElementById('cash-amount').value;
                 if(cashInput) {
                     changeFor = parseFloat(cashInput);
-                    if(changeFor < grandTotal) {
-                        showMsg("O valor para troco não pode ser menor que o total!", "error");
-                        return;
-                    }
+                    if(changeFor < grandTotal) { showMsg("O valor para troco não pode ser menor que o total!", "error"); return; }
                     changeAmount = changeFor - grandTotal;
                 }
             }
@@ -390,10 +497,8 @@
             showMsg("Preparando seu pedido...", "info");
 
             try {
-                if (!storeSettings.whatsapp) {
-                    showMsg("Loja não configurou o WhatsApp.", "error"); return;
-                }
-                const merchantNumber = storeSettings.whatsapp;
+                if (!storeSettings.whatsapp) { showMsg("A loja não configurou o WhatsApp.", "error"); return; }
+                const merchantNumber = storeSettings.whatsapp; 
                 
                 let orderText = `🌟 *Pedido de ${cName}*\n\n`;
                 const orderItems = cart.map(item => {
@@ -404,6 +509,7 @@
                 
                 orderText += `\n📦 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.',',')}`;
                 if(frete > 0) orderText += `\n🛵 *Taxa de Entrega:* R$ ${frete.toFixed(2).replace('.',',')}`;
+                if(discountAmount > 0) orderText += `\n🏷️ *Desconto (${appliedCoupon.code}):* - R$ ${discountAmount.toFixed(2).replace('.',',')}`;
                 orderText += `\n💰 *TOTAL:* R$ ${grandTotal.toFixed(2).replace('.',',')}\n`;
                 
                 orderText += `\n💳 *Pagamento:* ${paymentMethod}`;
@@ -412,13 +518,15 @@
                     orderText += `\n🔙 *Devolver:* R$ ${changeAmount.toFixed(2).replace('.',',')}`;
                 }
 
-                // Salva no banco de dados com as informações novas
+                // Salva no banco de dados (Firestore)
                 await addDoc(collection(db, 'orders'), {
                     userId: currentUser.uid, 
                     clientName: cName, 
-                    clientWhatsapp: cWa,
+                    clientWhatsapp: cWaFormatado,
                     items: orderItems, 
                     frete: frete,
+                    discountAmount: discountAmount,
+                    couponCode: appliedCoupon ? appliedCoupon.code : null,
                     total: grandTotal, 
                     paymentMethod: paymentMethod,
                     changeFor: changeFor,
@@ -427,8 +535,10 @@
                     timestamp: Date.now()
                 });
 
-                // Zera carrinho e form
+                // Limpar dados pós-envio
                 cart = []; 
+                appliedCoupon = null;
+                document.getElementById('cart-coupon-input').value = '';
                 updateCartUI();
                 document.getElementById('client-name').value = ''; 
                 document.getElementById('client-whatsapp').value = '';
@@ -439,7 +549,7 @@
                 showMsg("Sucesso! Redirecionando para o WhatsApp... 🚀");
                 switchClientTab('status');
 
-                // Bypass de bloqueio de Popup
+                // Envio para o WhatsApp
                 const whatsappUrl = `https://wa.me/${merchantNumber}?text=${encodeURIComponent(orderText)}`;
                 setTimeout(() => { 
                     const newWindow = window.open(whatsappUrl, '_blank');
@@ -457,12 +567,74 @@
         window.showMsg = (text, type = 'success') => {
             const msg = document.getElementById('system-message');
             msg.innerText = text;
-            msg.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-xl z-50 text-white font-display text-lg tracking-wide border-2 border-white transition-all duration-300 ${type === 'error' ? 'bg-red-500' : 'bg-samuca-blue'}`;
+            msg.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-xl z-50 text-white font-display text-sm sm:text-lg tracking-wide border-2 border-white transition-all duration-300 w-[90%] sm:w-auto text-center ${type === 'error' ? 'bg-red-500' : 'bg-samuca-blue'}`;
             msg.classList.remove('hidden');
             setTimeout(() => msg.classList.add('hidden'), 3000);
         };
 
         initAuth();
+        
+        // ==========================================
+        // CÓDIGO DO PWA (Instalável)
+        // ==========================================
+        
+        // 1. Gera o manifesto dinâmico (Para poder instalar como App)
+        const manifestData = {
+            "name": "Samuca Sabores da Vovó",
+            "short_name": "Samuca",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#fff5f5",
+            "theme_color": "#0b56a6",
+            "icons": [{
+                "src": "img/logo.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
+
+        // 2. Lógica para capturar o evento de "Instalar App"
+        let deferredPrompt;
+        const installBtn = document.getElementById('btn-install-app');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // 3. Service Worker Mínimo (Necessário para PWA)
+        const swCode = `
+            self.addEventListener('install', (e) => e.waitUntil(self.skipWaiting()));
+            self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+            self.addEventListener('fetch', (e) => {
+                e.respondWith(fetch(e.request).catch(() => new Response('Página Offline')));
+            });
+        `;
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(swUrl).then(() => {
+                    console.log('PWA Service Worker Registrado!');
+                }).catch(err => console.log('SW Erro:', err));
+            });
+        }
     </script>
 </body>
 </html>
